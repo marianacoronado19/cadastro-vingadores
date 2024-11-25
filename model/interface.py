@@ -54,15 +54,14 @@ class Interface:
         print(f'O Herói foi cadastrado: \n{heroi}')
 
     def formar_time():
-        '''Uma função que seleciona vários heróis e forma um time, mostrando informações'''
+        '''Uma função que seleciona vários heróis e forma um time, mostrando informações dos mesmos'''
         os.system('cls')
         Interface.imprime_titulo_tela('Formando um time!')
         Heroi.lista_resumo()
         if Heroi.lista_de_herois:
             try:
-                # Solicita os IDs dos heróis para o time
                 id_escolhido = input('Escolha os IDs dos Heróis desejados (separando por vírgula ou espaço): ')
-                # Limpa os espaços e separa os IDs inseridos
+                # Separa os IDs inseridos
                 id_escolhido = [id.strip() for id in id_escolhido.replace(',', ' ').split()]
 
                 time = []
@@ -94,26 +93,66 @@ class Interface:
 
     def convocar_heroi():
         '''Uma função que filtra o nome do heroi e depois o convoca'''
-        nome_heroi = input('Digite o nome do herói para convocar: ').strip().lower()
-        herois_encontrados = [h for h in Heroi.lista_de_herois if nome_heroi in h.nome.lower()] #Filtrar nomes de Heróis
-        if not herois_encontrados:
-            print(f"Nenhum herói encontrado com o nome '{nome_heroi}'. Tente novamente!")
-            return
-        for idx, heroi in enumerate(herois_encontrados, start=1):
-            print(f'O herói {heroi.nome} foi convocado')
+        os.system('cls')
+        Interface.imprime_titulo_tela('Convocando Herói!')
+        Heroi.lista_resumo()
+        if Heroi.lista_de_herois:
+            try:
+                id_escolhido = input('Escolha o ID do herói que deseja convocar (pressione ENTER para convocar todos os heróis cadastrados): ')
+                id_escolhidoo = [id.strip() for id in id_escolhido.replace(',', ' ').split()]
+                
+                conv = []
 
-        Interface.herois_convocados.append(herois_encontrados)
+                for id_str in id_escolhido:
+                    try:
+                        id_escolhido = int(id_str)
+                        heroi_encontrado = next((h for h in Heroi.lista_de_herois if h.id == id_escolhido), None)
+                        if heroi_encontrado:
+                            conv.append(heroi_encontrado)
+                        else:
+                            print(f'Herói com ID {id_escolhido} não encontrado.')
+
+                    except ValueError:
+                        print(f'O ID {id_str} é inválido. Por favor, insira números válidos!')
+
+                if conv:
+                    Interface.imprime_titulo_tela('Herói convocado com sucesso!')
+                    for heroi in conv:
+                        print(f'O herói {heroi.nome} foi convocado')
+                else:
+                    print('Nenhum herói foi selecionado ou todos os IDs fornecidos foram inválidos.')
+
+            except ValueError:
+                print("Por favor, insira um número válido para o ID.")
+                Interface.convocar_heroi()
+            
+            Interface.herois_convocados.append(id_escolhido)
+
+
+        # nome_heroi = input('Digite o nome do herói para convocar: ').strip().lower()
+        # herois_encontrados = [h for h in Heroi.lista_de_herois if nome_heroi in h.nome.lower()] #Filtrar nomes de Heróis
+        # if not herois_encontrados:
+        #     print(f"Nenhum herói encontrado com o nome '{nome_heroi}'. Tente novamente!")
+        #     return
+        # for idx, heroi in enumerate(herois_encontrados, start=1):
+        #     print(f'O herói {heroi.nome} foi convocado')
+
+        # Interface.herois_convocados.append(herois_encontrados)
 
     def aplicar_tornozeleira():
-        nome_heroi = input('Digite o nome do herói para aplicar a tornozeleira: ').strip().lower()
+        try:
+            id_heroi = input('Digite o ID do herói para aplicar a tornozeleira: ') #.strip().lower()
         
-        # Verifica se o herói foi convocado
-        heroi_encontrado = next((h for h in Interface.herois_convocados if nome_heroi in h.nome.lower()), None)
+            # Verifica se o herói foi convocado
+            heroi_encontrado = next((h for h in Interface.herois_convocados if id_heroi == h.id), None) # *in* não funciona pelo tipo da variavel
         
-        if heroi_encontrado:
-            print(f'A tornozeleira foi aplicada ao herói {heroi_encontrado.nome}.')
-        else:
-            print(f'O herói com nome {nome_heroi} não foi convocado. Não é possível aplicar a tornozeleira.')
+            if heroi_encontrado in Interface.herois_convocados:
+                print(f'A tornozeleira foi aplicada ao herói {heroi_encontrado.nome}.')
+            else:
+                print(f'O herói com nome {id_heroi} não foi convocado. Não é possível aplicar a tornozeleira.')
+        except ValueError:
+            print('Por favor, insira um número válido para o ID.')
+            Interface.aplicar_tornozeleira()
 
     def ler_opcao_usuario():
         '''Uma função que lê a opção do usuário na tela inicial'''

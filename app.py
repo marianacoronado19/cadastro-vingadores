@@ -9,6 +9,5 @@ def main():
     Heroi('Gavião Arqueiro', 'Clint Barton', 'Humano', 'Arco, Luta', 'Arco e flechas', 'Loki', '40')
     Heroi('Thor', 'Thor Odinson', 'Deidade', 'Força, Raios, Martelo', 'Mjolnir', '?', '90')
     i.apresentar_menu_principal()
-
 if __name__ == '__main__': # sempre no final do arquivo contendo a definição da função principal
     main()
