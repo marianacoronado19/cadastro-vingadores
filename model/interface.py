@@ -1,9 +1,11 @@
+from ast import Attribute
 from model.heroi import Heroi
 import os
 
 class Interface:
 
-    herois_convocados = []
+    # herois_convocados = []
+    convocado = False
  
     def imprimir_titulo_app():
         print('''
@@ -95,64 +97,46 @@ class Interface:
         '''Uma função que filtra o nome do heroi e depois o convoca'''
         os.system('cls')
         Interface.imprime_titulo_tela('Convocando Herói!')
-        Heroi.lista_resumo()
-        if Heroi.lista_de_herois:
-            try:
-                id_escolhido = input('Escolha o ID do herói que deseja convocar (pressione ENTER para convocar todos os heróis cadastrados): ')
-                id_escolhidoo = [id.strip() for id in id_escolhido.replace(',', ' ').split()]
-                
-                conv = []
+        if Heroi.lista_de_herois: 
+            nome_escolha = input('Digite o nome do herói que deseja convocar: ').strip().lower()
 
-                for id_str in id_escolhido:
-                    try:
-                        id_escolhido = int(id_str)
-                        heroi_encontrado = next((h for h in Heroi.lista_de_herois if h.id == id_escolhido), None)
-                        if heroi_encontrado:
-                            conv.append(heroi_encontrado)
-                        else:
-                            print(f'Herói com ID {id_escolhido} não encontrado.')
+            heroi_encontrado = next((h for h in Heroi.lista_de_herois if nome_escolha.strip().lower() in h.nome.strip().lower()), None)
 
-                    except ValueError:
-                        print(f'O ID {id_str} é inválido. Por favor, insira números válidos!')
-
-                if conv:
-                    Interface.imprime_titulo_tela('Herói convocado com sucesso!')
-                    for heroi in conv:
-                        print(f'O herói {heroi.nome} foi convocado')
-                else:
-                    print('Nenhum herói foi selecionado ou todos os IDs fornecidos foram inválidos.')
-
-            except ValueError:
-                print("Por favor, insira um número válido para o ID.")
-                Interface.convocar_heroi()
-            
-            Interface.herois_convocados.append(id_escolhido)
-
-
-        # nome_heroi = input('Digite o nome do herói para convocar: ').strip().lower()
-        # herois_encontrados = [h for h in Heroi.lista_de_herois if nome_heroi in h.nome.lower()] #Filtrar nomes de Heróis
-        # if not herois_encontrados:
-        #     print(f"Nenhum herói encontrado com o nome '{nome_heroi}'. Tente novamente!")
-        #     return
-        # for idx, heroi in enumerate(herois_encontrados, start=1):
-        #     print(f'O herói {heroi.nome} foi convocado')
-
-        # Interface.herois_convocados.append(herois_encontrados)
+            if heroi_encontrado:
+                heroi_encontrado.convocado = True
+                print(f'O herói {heroi_encontrado.nome} foi convocado com sucesso!')
+            else:
+                print(f'Nenhum herói encontrado com o nome "{nome_escolha}". Tente novamente.')
+        else:
+            print('Nenhum herói cadastrado até o momento.')
 
     def aplicar_tornozeleira():
-        try:
-            id_heroi = input('Digite o ID do herói para aplicar a tornozeleira: ') #.strip().lower()
-        
-            # Verifica se o herói foi convocado
-            heroi_encontrado = next((h for h in Interface.herois_convocados if id_heroi == h.id), None) # *in* não funciona pelo tipo da variavel
-        
-            if heroi_encontrado in Interface.herois_convocados:
-                print(f'A tornozeleira foi aplicada ao herói {heroi_encontrado.nome}.')
-            else:
-                print(f'O herói com nome {id_heroi} não foi convocado. Não é possível aplicar a tornozeleira.')
-        except ValueError:
-            print('Por favor, insira um número válido para o ID.')
-            Interface.aplicar_tornozeleira()
+        os.system('cls')
+        Interface.imprime_titulo_tela('Aplicação de Tornozeleira.')
+        nome_escolha = input('Digite o nome do herói para aplicar a tornozeleira: ').strip()
+        heroi_encontrado = next((h for h in Heroi.lista_de_herois if nome_escolha.lower() in h.nome.lower()), None)
+
+        if heroi_encontrado is None:
+            print("Nenhum herói encontrado com o nome informado.")
+            return
+        if heroi_encontrado.convocado and heroi_encontrado.forca <= 500:
+            print(f"Uma tornozeleira foi aplicada ao herói {heroi_encontrado.nome}.")
+        elif heroi_encontrado.convocado and heroi_encontrado.forca > 500:
+            print(f"Não é possível aplicar uma tornozeleira a este herói por conta de seu nível de força ({heroi_encontrado.forca}).")
+        else:
+            print("O herói precisa ser convocado primeiro.")
+
+        # id_heroi = input('Digite o nome do herói para aplicar a tornozeleira: ').strip().lower()
+
+        # heroi_encontrado = next((h for h in Heroi.lista_de_herois if str(h.id) == id_heroi), None)
+
+        # if heroi_encontrado:
+        #     if heroi_encontrado.convocado:
+        #         print(f'A tornozeleira foi aplicada ao herói {heroi_encontrado.nome}.')
+        #     else:
+        #         print(f'O herói {heroi_encontrado.nome} não foi convocado. Não é possível aplicar a tornozeleira.')
+        # else:
+        #     print(f'Nenhum herói encontrado com o nome {id_heroi}.')
 
     def ler_opcao_usuario():
         '''Uma função que lê a opção do usuário na tela inicial'''
@@ -162,7 +146,7 @@ class Interface:
                 Interface.cadastrar_heroi()
             elif opcao == 2:
                 Interface.imprime_titulo_tela('Listando Vingadores')
-                Heroi.listar_vingadores()
+                Heroi.lista_tornozeleira()
             elif opcao == 3:
                 Interface.imprime_titulo_tela('Formando um time!')
                 print('Escolha Heróis para formar um time: ')
