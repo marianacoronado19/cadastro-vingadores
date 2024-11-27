@@ -1,6 +1,7 @@
-from ast import Attribute
+# from ast import Attribute
 from model.heroi import Heroi
 import os
+from model.database import Database
 
 class Interface:
 
@@ -72,15 +73,11 @@ class Interface:
             except AttributeError:
                 print("Por favor, insira um valor válido.")
 
-        poderes = input('Poderes: ')
-        if len(poderes) > 100:
-            print('Os poderes não podem exceder 100 caracteres. Tente novamente.')
-            return
-        
+        poderes = input('Poderes: ').split(',')        
         poder_principal = input('Poder principal do herói: ')
-        fraquezas = input('Fraquezas do herói: ')
+        fraquezas = input('Fraquezas do herói: ').split(',')
 
-        while True:
+        while True: # Define o valor máximo da força
             try:
                 forca = int(input('Nível de força (0 - 10000): '))
                 if forca > 10000:
@@ -91,6 +88,21 @@ class Interface:
                 print("Por favor, insira um número válido para o nível de força.")
 
         heroi = Heroi(nome, real, categoria, poderes, poder_principal, fraquezas, forca)
+
+        # Salva o vingador no banco de dados
+        try:
+            db = Database()
+            db.connect()
+
+            query = "INSERT INTO heroi (nome_heroi, nome_real, categoria, poderes, poder_principal, fraquezas, nivel_forca) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+            values = (nome, real, categoria, ', '.join(poderes), poder_principal, ', '.join(fraquezas), forca)
+            
+            db.execute_query(query, values)
+        except Exception as e:
+            print(f'Erro ao salvar vingador no banco de dados: {e}')
+        finally:
+            db.disconnect()
+
         print(f'O Herói foi cadastrado: \n{heroi}')
 
     @staticmethod

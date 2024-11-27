@@ -1,12 +1,15 @@
 import mysql.connector
 from mysql.connector import Error
+from dotenv import load_dotenv
+from os import getenv
 
 class Database:
     def __init__(self):
-        self.host = 'localhost'
-        self.user = 'root'
-        self.password = 'admin'
-        self.database = 'vingadores'
+        load_dotenv()
+        self.host = getenv('BD_HOST')
+        self.user = getenv('BD_USER')
+        self.password = getenv('BD_PSWD')
+        self.database = getenv('BD_DATABASE')
 
     def connect(self):
         try:
@@ -20,7 +23,17 @@ class Database:
             print('Conexão com o banco de dados realizada com sucesso')
         except Error as e:
             print(f'Erro: {e}')
+    
+    def disconnect(self):
+        self.connection.close()
+        print('Conexão com o banco de dados encerrada com sucesso')
 
-Database().connect()
-# db = Database()
-# db.connect()
+    def execute_query(self, query, values = None):
+        try:
+            self.cursor.execute(query, values)  # Verifica se tem algum comando mysql
+            self.connection.commit()
+            print('Query executada com sucesso')
+            return self.cursor  # Cursos = mensageiro/ponteiro
+        except Error as e:
+            print(f'Erro: {e}')
+            return None
