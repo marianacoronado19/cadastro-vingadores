@@ -45,5 +45,7 @@ class Heroi:
         print(f"| {'Nome de Herói'.ljust(20)} | {'Nome Real'.ljust(20)} | {'Categoria'.ljust(15)} | {'Tornozeleira'.ljust(12)} | {'Localizador'.ljust(12)} |")
         print(f"+{'-'*22}|{'-'*22}|{'-'*17}|{'-'*14}|{'-'*14}+")
         for heroi in Heroi.lista_de_herois:
-            print(f"| {str(heroi.nome).ljust(20)} | {str(heroi.real).ljust(20)} | {str(heroi.categoria).ljust(15)} | {str(heroi.tornozeleira_formatada()).ljust(12)} | {str(heroi.gps_formatado()).ljust(12)} |")
-        print(f"+{'-'*22}|{'-'*22}|{'-'*17}|{'-'*14}|{'-'*14}+")
+            print()
+            
+        #     print(f"| {str(heroi.nome).ljust(20)} | {str(heroi.real).ljust(20)} | {str(heroi.categoria).ljust(15)} | {str(heroi.tornozeleira_formatada()).ljust(12)} | {str(heroi.gps_formatado()).ljust(12)} |")
+        # print(f"+{'-'*22}|{'-'*22}|{'-'*17}|{'-'*14}|{'-'*14}+")
