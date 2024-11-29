@@ -65,3 +65,17 @@ class Heroi:
             print(f'Erro: {e}')
         finally:
             db.disconnect() # precisa terminar a conexão !!
+
+    def herois_convocados():
+        try:
+            db = Database()
+            db.connect()
+
+            query = 'SELECT * FROM view_herois_convocados'
+            herois = db.select(query) # retorna uma lista de tuplas
+            for heroi in herois:
+                Heroi(*heroi)
+        except Exception as e:
+            print(f'Erro: {e}')
+        finally:
+            db.disconnect() # precisa terminar a conexão !!
