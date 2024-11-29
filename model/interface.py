@@ -6,7 +6,11 @@ from model.database import Database
 class Interface:
 
     convocado = False
- 
+
+    def __init__(self): #sempre executado
+        Heroi.carregar_herois()
+        self.apresentar_menu_principal()     
+
     def imprimir_titulo_app():
         '''Uma função que imprime o título do app'''
         print('''
@@ -87,8 +91,6 @@ class Interface:
             except ValueError:
                 print("Por favor, insira um número válido para o nível de força.")
 
-        heroi = Heroi(nome, real, categoria, poderes, poder_principal, fraquezas, forca)
-
         # Salva o vingador no banco de dados
         try:
             db = Database()
@@ -97,7 +99,9 @@ class Interface:
             query = "INSERT INTO heroi (nome_heroi, nome_real, categoria, poderes, poder_principal, fraquezas, nivel_forca) VALUES (%s, %s, %s, %s, %s, %s, %s)"
             values = (nome, real, categoria, ', '.join(poderes), poder_principal, ', '.join(fraquezas), forca)
             
-            db.execute_query(query, values)
+            cursor = db.execute_query(query, values)
+            heroi = Heroi(cursor.lastrowid, nome, real, categoria, poderes, poder_principal, fraquezas, forca)
+
         except Exception as e:
             print(f'Erro ao salvar vingador no banco de dados: {e}')
         finally:

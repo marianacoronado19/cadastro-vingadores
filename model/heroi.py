@@ -1,10 +1,13 @@
+from model.database import Database
+
 class Heroi:
 
     lista_de_herois = []
     status_tornozeleira = False
     status_gps = False
 
-    def __init__(self, nome, real, categoria, poderes, poder_principal, fraquezas, forca, convocado = False):
+    def __init__(self, id, nome, real, categoria, poderes, poder_principal, fraquezas, forca, convocado = False):
+        self.id = id
         self.nome = nome
         self.real = real
         self.categoria = categoria
@@ -45,7 +48,20 @@ class Heroi:
         print(f"| {'Nome de Herói'.ljust(20)} | {'Nome Real'.ljust(20)} | {'Categoria'.ljust(15)} | {'Tornozeleira'.ljust(12)} | {'Localizador'.ljust(12)} |")
         print(f"+{'-'*22}|{'-'*22}|{'-'*17}|{'-'*14}|{'-'*14}+")
         for heroi in Heroi.lista_de_herois:
-            print()
-            
-        #     print(f"| {str(heroi.nome).ljust(20)} | {str(heroi.real).ljust(20)} | {str(heroi.categoria).ljust(15)} | {str(heroi.tornozeleira_formatada()).ljust(12)} | {str(heroi.gps_formatado()).ljust(12)} |")
-        # print(f"+{'-'*22}|{'-'*22}|{'-'*17}|{'-'*14}|{'-'*14}+")
+            print(f"| {str(heroi.nome).ljust(20)} | {str(heroi.real).ljust(20)} | {str(heroi.categoria).ljust(15)} | {str(heroi.tornozeleira_formatada()).ljust(12)} | {str(heroi.gps_formatado()).ljust(12)} |")
+        print(f"+{'-'*22}|{'-'*22}|{'-'*17}|{'-'*14}|{'-'*14}+")
+
+    @staticmethod
+    def carregar_herois():
+        try:
+            db = Database()
+            db.connect()
+
+            query = 'SELECT idheroi, nome_heroi, nome_real, categoria, poderes, poder_principal, fraquezas, nivel_forca FROM heroi'
+            herois = db.select(query) # retorna uma lista de tuplas
+            for heroi in herois:
+                Heroi(*heroi)
+        except Exception as e:
+            print(f'Erro: {e}')
+        finally:
+            db.disconnect() # precisa terminar a conexão !!

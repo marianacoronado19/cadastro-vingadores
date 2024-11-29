@@ -33,7 +33,15 @@ class Database:
             self.cursor.execute(query, values)  # Verifica se tem algum comando mysql
             self.connection.commit()
             print('Query executada com sucesso')
-            return self.cursor  # Cursos = mensageiro/ponteiro
+            return self.cursor  # Cursor = mensageiro/ponteiro
+        except Error as e:
+            print(f'Erro: {e}')
+            return None
+        
+    def select(self, query):
+        try:
+            self.cursor.execute(query)
+            return self.cursor.fetchall() # retorna registro em forma de 'lista de tupla' (lista imutavel)
         except Error as e:
             print(f'Erro: {e}')
             return None

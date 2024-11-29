@@ -1,8 +1,7 @@
-# from model.heroi import Heroi
-from model.interface import Interface as i
+from model.interface import Interface
 
 def main():
-    i.apresentar_menu_principal()
+    Interface()
 
 if __name__ == '__main__': # Sempre no final do arquivo contendo a definição da função principal
     main()
