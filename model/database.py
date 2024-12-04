@@ -38,9 +38,9 @@ class Database:
             print(f'Erro: {e}')
             return None
         
-    def select(self, query):
+    def select(self, query, values = None):
         try:
-            self.cursor.execute(query)
+            self.cursor.execute(query, values)
             return self.cursor.fetchall() # retorna registro em forma de 'lista de tupla' (lista imutavel)
         except Error as e:
             print(f'Erro: {e}')

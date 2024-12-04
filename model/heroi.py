@@ -71,11 +71,23 @@ class Heroi:
             db = Database()
             db.connect()
 
-            query = 'SELECT * FROM view_herois_convocados'
+            query = 'SELECT nome_heroi, data_convocacao, condicao FROM vingadores.view_herois_convocados'
             herois = db.select(query) # retorna uma lista de tuplas
+
+            if not herois:
+                print('Nenhum herói convocado.')
+                return
+
+            print(f"| {'Nome de Herói'.ljust(20)} | {'Data de Convocação'.ljust(19)} | {'Status de Convocação'.ljust(20)} |")
+            print(f"+{'-'*22}|{'-'*21}|{'-'*22}+")
+
             for heroi in herois:
-                Heroi(*heroi)
+                nome_heroi = heroi[0]
+                data_convocacao = heroi[1]
+                status_convocacao = heroi[2]
+                print(f"| {nome_heroi.ljust(20)} | {data_convocacao} | {status_convocacao.ljust(20)} |")
+            print(f"+{'-'*22}|{'-'*21}|{'-'*22}+\n")
         except Exception as e:
             print(f'Erro: {e}')
         finally:
-            db.disconnect() # precisa terminar a conexão !!
+            db.disconnect()
