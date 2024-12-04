@@ -3,10 +3,8 @@ from model.database import Database
 class Heroi:
 
     lista_de_herois = []
-    status_tornozeleira = False
-    status_gps = False
 
-    def __init__(self, id, nome, real, categoria, poderes, poder_principal, fraquezas, forca, convocado = False):
+    def __init__(self, id, nome, real, categoria, poderes, poder_principal, fraquezas, forca, convocado = False, status_t = False, status_g = False):
         self.id = id
         self.nome = nome
         self.real = real
@@ -16,14 +14,16 @@ class Heroi:
         self.fraquezas = fraquezas
         self.forca = forca
         self.convocado = convocado
+        self.status_t = status_t
+        self.status_g = status_g
         
         Heroi.lista_de_herois.append(self)
 
     def tornozeleira_formatada(self):
-        return "Sim" if self.status_tornozeleira else "Não"
+        return "Sim" if self.status_t else "Não"
 
     def gps_formatado(self):
-        return "Sim" if self.status_gps else "Não"
+        return "Sim" if self.status_g else "Não"
 
     def imprimir_cabecalho():
         print(f'| {'Nome de Herói'.ljust(20)} | {'Nome Real'.ljust(20)} | {'Categoria'.ljust(12)} | {'Poderes'.ljust(30)} | {'Poder Principal'.ljust(20)} | {'Fraquezas'.ljust(20)} | {'Nível de Força'.ljust(15)} |')

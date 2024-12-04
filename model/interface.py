@@ -227,7 +227,6 @@ class Interface:
                 print(f"A tornozeleira não pode ser aplicada a {heroi_encontrado.nome} porque a condição da convocação não é 'Comparecido'.")
                 return
             
-            heroi_encontrado.convocado = True
 
         except Exception as e:
             print(f'Erro ao consultar a view de heróis convocados: {e}')
@@ -295,6 +294,7 @@ class Interface:
                     finally:
                         db.disconnect()
                         os.system('cls')
+                        Heroi.status_t = True
                         print(f"Uma tornozeleira foi aplicada ao herói {heroi_encontrado.nome}.")
                 else:
                     os.system('cls')
