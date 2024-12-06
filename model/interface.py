@@ -151,7 +151,6 @@ class Interface:
             heroi_encontrado = next((h for h in Heroi.lista_de_herois if nome_escolha.strip().lower() in h.nome.strip().lower() or nome_escolha.strip().lower() in h.real.strip().lower()), None)
 
             if heroi_encontrado:
-                heroi_encontrado.convocado = True
                 motivo = input('Motivo da convocação: ')
                 data_padrao = datetime.now()
                 data_convocacao_input = input("Data de convocação (deixe em branco para a data de hoje): ")
@@ -168,6 +167,9 @@ class Interface:
                 
                 status_convocacao = input('Status da convocação (pendente, comparecido, etc): ').capitalize()
 
+                if status_convocacao == 'Comparecido':
+                    heroi_encontrado.convocado = True
+
                 try:
                     db = Database()
                     db.connect()
@@ -180,6 +182,10 @@ class Interface:
 
                     query_heroi_convocacao = "INSERT INTO heroi_convocacao (idheroi, idconvocacao) VALUES (%s, %s)"
                     db.execute_query(query_heroi_convocacao, (heroi_encontrado.id, idconvocacao))
+
+                    if heroi_encontrado.convocado:
+                        query_convocacao = "UPDATE convocacao SET status_convocacao = 'Comparecido' WHERE idconvocacao = %s"
+                        db.execute_query(query_convocacao, (idconvocacao,))
                 except Exception as e:
                     print(f'Erro ao salvar vingador no banco de dados: {e}')
                 finally:
@@ -193,7 +199,8 @@ class Interface:
 
     @staticmethod
     def aplicar_tornozeleira():
-        '''Uma função que define se deve ser aplicada uma tornozeleira a determinado herói, faz a filtração dos nomes e define o valor da variavel como True (não é possível aplicar tornozeleira ao Thor, Hulk ou heróis com um determinado nível de força...)'''
+        '''Uma função que define se deve ser aplicada uma tornozeleira a determinado herói, verifica se ele foi convocado, e aplica a tornozeleira se possível.'''
+        
         os.system('cls')
         Interface.imprime_titulo_tela('Aplicação de Tornozeleira.')
         Heroi.herois_convocados()
@@ -209,34 +216,10 @@ class Interface:
             print("Nenhum herói encontrado com o nome informado.")
             return
 
-        try:
-            db = Database()
-            db.connect()
-
-            query = "SELECT condicao FROM vingadores.view_herois_convocados WHERE nome_heroi = %s"
-            values = (heroi_encontrado.nome,)
-            result = db.select(query, values)
-
-            if not result:
-                print(f"Não foi encontrado status de convocação para o herói {heroi_encontrado.nome}.")
-                return
-
-            condicao = result[0][0]
-
-            if condicao != 'Comparecido':
-                print(f"A tornozeleira não pode ser aplicada a {heroi_encontrado.nome} porque a condição da convocação não é 'Comparecido'.")
-                return
-            
-
-        except Exception as e:
-            print(f'Erro ao consultar a view de heróis convocados: {e}')
-            return
-        finally:
-            db.disconnect()
-
-        status = input('Status (Ativa, Inativa): ')
+        status = input('Status da tornozeleira (Ativa, Inativa): ')
         data_padrao = datetime.now()
 
+        # Data de ativação
         data_ativacao_input = input("Data de ativação da tornozeleira (deixe em branco para a data de hoje): ")
         if data_ativacao_input == '':
             data_ativacao = data_padrao
@@ -247,60 +230,74 @@ class Interface:
                 print("Formato de data inválido! Usando a data padrão.")
                 data_ativacao = data_padrao
 
-        data_desativacao_input = input("Digite uma data de desativacao (ou deixe em branco para N/A): ")
+        # Data de desativação
+        data_desativacao_input = input("Digite uma data de desativação (ou deixe em branco para N/A): ")
         if not data_desativacao_input:
             data_desativacao = None
         else:
             try:
                 data_desativacao = data_desativacao_input
             except ValueError:
-                os.system('cls')
                 print("Formato de data inválido! Usando 'N/A' para desativação.")
                 data_desativacao = None
 
+        # Verifica se o herói tem força suficiente e se não foi convocado ainda
         heroi_encontrado.forca = int(heroi_encontrado.forca)
 
         if not heroi_encontrado.convocado:
-            os.system('cls')
             print(f"O herói {heroi_encontrado.nome} precisa ser convocado primeiro.")
             return
 
-        if not heroi_encontrado.status_tornozeleira:  
+        if not heroi_encontrado.status_t:  
             if heroi_encontrado.nome.lower() == 'thor':
-                os.system('cls')
                 print('"O Deus do Trovão não se submeterá a tal dispositivo mundano!" - Não foi possível aplicar uma tornozeleira a Thor')
             elif heroi_encontrado.nome.lower() == 'hulk':
-                os.system('cls')
                 print('"ARGH! HULK ESMAGA ESSE TROÇO!!!" - Não foi possível aplicar uma tornozeleira a Hulk')
             else:
                 if heroi_encontrado.forca < 5000:
-                    heroi_encontrado.status_tornozeleira = True
                     try:
                         db = Database()
                         db.connect()
 
+                        # Consulta o status da convocação do herói no banco de dados
+                        query = "SELECT condicao FROM vingadores.view_herois_convocados WHERE nome_heroi = %s"
+                        values = (heroi_encontrado.nome,)
+                        result = db.select(query, values)
+
+                        if not result:
+                            print(f"Não foi encontrado status de convocação para o herói {heroi_encontrado.nome}.")
+                            return
+
+                        condicao = result[0][0]
+
+                        # Se a condição da convocação não for 'Comparecido', não aplica a tornozeleira
+                        if condicao != 'Comparecido':
+                            print(f"A tornozeleira não pode ser aplicada a {heroi_encontrado.nome} porque a condição da convocação não é 'Comparecido'.")
+                            return 
+
+                        # Se a convocação foi confirmada como "Comparecido", aplica a tornozeleira
                         query = "INSERT INTO tornozeleira (status_tornozeleira, data_ativacao, data_desativacao) VALUES (%s, %s, %s)"
                         values = (status, data_ativacao, data_desativacao)
 
                         cursor = db.execute_query(query, values)
                         idtornozeleira = cursor.lastrowid
 
+                        # Relaciona a tornozeleira com o herói
                         query_heroi_convocacao = "INSERT INTO heroi_tornozeleira (idheroi, idtornozeleira) VALUES (%s, %s)"
                         db.execute_query(query_heroi_convocacao, (heroi_encontrado.id, idtornozeleira))
 
+                        # Cria um resumo da aplicação da tornozeleira
+                        query_resumo = "INSERT INTO heroi_resumo (idheroi, idtornozeleira, idlocalizador) VALUES (%s, %s, %s)"
+                        db.execute_query(query_resumo, (heroi_encontrado.id, idtornozeleira, None))  # Ajuste conforme a lógica do idlocalizador
+
                     except Exception as e:
-                        os.system('cls')
-                        print(f'Erro ao salvar vingador no banco de dados: {e}')
+                        print(f'Erro ao salvar dados no banco de dados: {e}')
                     finally:
                         db.disconnect()
-                        os.system('cls')
-                        Heroi.status_t = True
                         print(f"Uma tornozeleira foi aplicada ao herói {heroi_encontrado.nome}.")
                 else:
-                    os.system('cls')
                     print(f"Não é possível aplicar uma tornozeleira a {heroi_encontrado.nome} devido ao seu alto nível de força ({heroi_encontrado.forca}).")
         else:
-            os.system('cls')
             print(f'O herói {heroi_encontrado.nome} já está usando uma tornozeleira.')
     
     @staticmethod
@@ -318,13 +315,47 @@ class Interface:
         if heroi_encontrado is None:
             print("Nenhum herói encontrado com o nome informado.")
             return
-        if not heroi_encontrado.status_tornozeleira:
+
+        status_localizador = input('Status(Ativo, Inativo): ')
+        localizacao_atual = input('Localização atual do herói: ')
+        ultima_localizacao = input('Última localização do herói: ')
+        data_desativacao_input = input("Digite uma data de desativacao (ou deixe em branco para N/A): ")
+        if not data_desativacao_input:
+            data_desativacao = None
+        else:
+            try:
+                data_desativacao = data_desativacao_input
+            except ValueError:
+                os.system('cls')
+                print("Formato de data inválido! Usando 'N/A' para desativação.")
+                data_desativacao = None
+
+        if not heroi_encontrado.status_t:
             print(f"O herói {heroi_encontrado.nome} precisa estar usando uma tornozeleira primeiro.")
             return
         else:
-            if not heroi_encontrado.status_gps:
-                heroi_encontrado.status_gps = True
-                print(f'O GPS da tornozeleira do herói {heroi_encontrado.nome} foi ligado.')
+            if not heroi_encontrado.status_g:
+                try:
+                    db = Database()
+                    db.connect()
+
+                    query = "INSERT INTO localizador (status_localizador, localizacao_atual, ultima_localizacao, data_desativacao) VALUES (%s, %s, %s, %s)"
+                    values = (status_localizador, localizacao_atual, ultima_localizacao, data_desativacao)
+
+                    cursor = db.execute_query(query, values)
+                    idlocalizador = cursor.lastrowid
+
+                    query_heroi_convocacao = "INSERT INTO heroi_localizador (idheroi, idlocalizador) VALUES (%s, %s)"
+                    db.execute_query(query_heroi_convocacao, (heroi_encontrado.id, idlocalizador))
+
+                except Exception as e:
+                    os.system('cls')
+                    print(f'Erro ao salvar vingador no banco de dados: {e}')
+                finally:
+                    db.disconnect()
+                    os.system('cls')
+                    heroi_encontrado.status_g = True
+                    print(f'O GPS da tornozeleira do herói {heroi_encontrado.nome} foi ligado.')
             else:
                 print(f'O herói {heroi_encontrado.nome} já está sendo rastreado.')
 
@@ -337,7 +368,28 @@ class Interface:
         nome_escolha = input('Digite o nome do herói para emitir um mandado de prisão: ').strip()
         heroi_encontrado = next((h for h in Heroi.lista_de_herois if nome_escolha.strip().lower() in h.nome.strip().lower() or nome_escolha.strip().lower() in h.real.strip().lower()), None)
 
-        print(f'Um mandado de prisão foi emitido para {heroi_encontrado.nome}.')
+        motivo = input('Motivo: ')
+        data_emissao = input('Data de Emissão: ')
+        status_mandado = input('Status(Ativo, cumprido, cancelado): ')
+
+        try:
+            db = Database()
+            db.connect()
+
+            query = "INSERT INTO mandado (motivo, data_emissao, status_mandado) VALUES (%s, %s, %s)"  # query envia um comando para o mysql
+            values = (motivo, data_emissao, status_mandado)
+            
+            cursor = db.execute_query(query, values)
+            idconvocacao = cursor.lastrowid
+
+            query_heroi_convocacao = "INSERT INTO heroi_mandado (idheroi, idmandado) VALUES (%s, %s)"
+            db.execute_query(query_heroi_convocacao, (heroi_encontrado.id, idconvocacao))
+
+        except Exception as e:
+            print(f'Erro ao salvar vingador no banco de dados: {e}')
+        finally:
+            db.disconnect()
+            print(f'Um mandado de prisão foi emitido para {heroi_encontrado.nome}.')
 
     @staticmethod
     def info():
@@ -357,8 +409,8 @@ Poder principal: {heroi_encontrado.poder_principal}
 Fraquezas: {heroi_encontrado.forca}
 Nível de força: {heroi_encontrado.forca}
 Status de convocação: {heroi_encontrado.convocado}
-Status da tornozeleira: {heroi_encontrado.status_tornozeleira}
-Status do chip GPS: {heroi_encontrado.status_gps}
+Status da tornozeleira: {heroi_encontrado.status_t}
+Status do chip GPS: {heroi_encontrado.status_g}
 ''')
         
     def ler_opcao_usuario():
@@ -371,7 +423,7 @@ Status do chip GPS: {heroi_encontrado.status_gps}
             elif opcao == 2:
                 Interface.imprimir_titulo_app()
                 Interface.imprime_titulo_tela('Listando Vingadores')
-                Heroi.lista_tornozeleira()
+                Heroi.carregar_resumo()
             elif opcao == 3:
                 Interface.imprimir_titulo_app()
                 Interface.imprime_titulo_tela('Formando um time!')

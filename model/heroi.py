@@ -28,6 +28,9 @@ class Heroi:
     def imprimir_cabecalho():
         print(f'| {'Nome de Herói'.ljust(20)} | {'Nome Real'.ljust(20)} | {'Categoria'.ljust(12)} | {'Poderes'.ljust(30)} | {'Poder Principal'.ljust(20)} | {'Fraquezas'.ljust(20)} | {'Nível de Força'.ljust(15)} |')
 
+    # def cabecalho_resumo():
+    #     print(f'| {'Nome de Herói'.ljust(20)} | {'Nome Real'.ljust(20)} | {'Tornozeleira'.ljust(10)} | {'GPS'.ljust(10)} |')
+
     @classmethod
     def listar_vingadores(cls):
         Heroi.imprimir_cabecalho()
@@ -37,19 +40,24 @@ class Heroi:
     def __str__(self):
         return f'| {str(self.nome).ljust(20)} | {str(self.real).ljust(20)} | {str(self.categoria).ljust(12)} | {str(self.poderes).ljust(30)} | {str(self.poder_principal).ljust(20)} | {str(self.fraquezas).ljust(20)} | {int(self.forca)}{' '*11} |'
 
-    def lista_resumo():
-        print(f'| {'Nome de Herói'.ljust(20)} |')
-        print(f'+{'-'*22}+')
-        for vingador in Heroi.lista_de_herois:
-            print(f'| {str(vingador.nome).ljust(20)} |')
-        print(f'+{'-'*22}+')
+    # def lista_resumo():
+    #     print(f'| {'Nome de Herói'.ljust(20)} |')
+    #     print(f'+{'-'*22}+')
+    #     for vingador in Heroi.lista_de_herois:
+    #         print(f'| {str(vingador.nome).ljust(20)} |')
+    #     print(f'+{'-'*22}+')
 
-    def lista_tornozeleira():
-        print(f"| {'Nome de Herói'.ljust(20)} | {'Nome Real'.ljust(20)} | {'Categoria'.ljust(15)} | {'Tornozeleira'.ljust(12)} | {'Localizador'.ljust(12)} |")
-        print(f"+{'-'*22}|{'-'*22}|{'-'*17}|{'-'*14}|{'-'*14}+")
-        for heroi in Heroi.lista_de_herois:
-            print(f"| {str(heroi.nome).ljust(20)} | {str(heroi.real).ljust(20)} | {str(heroi.categoria).ljust(15)} | {str(heroi.tornozeleira_formatada()).ljust(12)} | {str(heroi.gps_formatado()).ljust(12)} |")
-        print(f"+{'-'*22}|{'-'*22}|{'-'*17}|{'-'*14}|{'-'*14}+")
+    # def lista_tornozeleira():
+    #     print(f"| {'Nome de Herói'.ljust(20)} | {'Nome Real'.ljust(20)} | {'Categoria'.ljust(15)} | {'Tornozeleira'.ljust(12)} | {'Localizador'.ljust(12)} |")
+    #     print(f"+{'-'*22}|{'-'*22}|{'-'*17}|{'-'*14}|{'-'*14}+")
+    #     for heroi in Heroi.lista_de_herois:
+    #         print(f"| {str(heroi.nome).ljust(20)} | {str(heroi.real).ljust(20)} | {str(heroi.categoria).ljust(15)} | {str(heroi.tornozeleira_formatada()).ljust(12)} | {str(heroi.gps_formatado()).ljust(12)} |")
+    #     print(f"+{'-'*22}|{'-'*22}|{'-'*17}|{'-'*14}|{'-'*14}+")
+
+    # def lista_resumo():
+    #     Heroi.cabecalho_resumo()
+    #     for vingador in Heroi.lista_de_herois:
+    #         print(f'| {str(vingador.nome).ljust(20)} | {str(vingador.real).ljust(20)} | {str(vingador.tornozeleira_formatada()).ljust(12)} | {str(vingador.gps_formatado()).ljust(12)} |')
 
     @staticmethod
     def carregar_herois():
@@ -91,3 +99,32 @@ class Heroi:
             print(f'Erro: {e}')
         finally:
             db.disconnect()
+
+    def carregar_resumo():
+        try:
+            db = Database()
+            db.connect()
+
+            query = 'SELECT nome_heroi, nome_real, status_tornozeleira, status_localizador FROM vingadores.view_heroi_resumo'
+            herois = db.select(query) # retorna uma lista de tuplas
+
+            if not herois:
+                print('Nenhum herói encontrado.')
+                return
+
+            print(f'| {'Nome de Herói'.ljust(20)} | {'Nome Real'.ljust(20)} | {'Tornozeleira'.ljust(10)} | {'Localizador'.ljust(10)} |')
+            print(f"+{'-'*22}|{'-'*22}|{'-'*14}|{'-'*13}+")
+
+            for heroi in herois:
+                nome_heroi = heroi[0]
+                nome_real = heroi[1]
+                status_tornozeleira = heroi[2]
+                status_localizador = heroi[3]
+                print(f"| {nome_heroi.ljust(20)} | {nome_real.ljust(20)} | {status_tornozeleira.ljust(12)} | {status_localizador.ljust(11)} |")
+            print(f"+{'-'*22}|{'-'*22}|{'-'*14}|{'-'*13}+\n")
+        except Exception as e:
+            print(f'Erro: {e}')
+        finally:
+            db.disconnect()
+
+        
